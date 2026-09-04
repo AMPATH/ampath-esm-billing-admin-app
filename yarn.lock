@@ -2790,9 +2790,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openmrs/esm-template-app@workspace:.":
+"@ampath/esm-billing-admin-app@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@openmrs/esm-template-app@workspace:."
+  resolution: "@ampath/esm-billing-admin-app@workspace:."
   dependencies:
     "@carbon/react": "npm:^1.83.0"
     "@openmrs/eslint-config": "npm:^2.1.0"

@@ -10,8 +10,8 @@ on:
       - created
 
 env:
-  ESM_NAME: "@openmrs/esm-template-app"
-  JS_NAME: "openmrs-esm-template-app.js"
+  ESM_NAME: "@ampath/esm-billing-admin-app"
+  JS_NAME: "ampath-esm-billing-admin-app.js"
 
 jobs:
   build:

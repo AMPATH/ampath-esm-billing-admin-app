@@ -7,7 +7,7 @@
 import { getAsyncLifecycle, defineConfigSchema } from '@openmrs/esm-framework';
 import { configSchema } from './config-schema';
 
-const moduleName = '@openmrs/esm-template-app';
+const moduleName = '@ampath/esm-billing-admin-app';
 
 const options = {
   featureName: 'root-world',

@@ -1,13 +1,14 @@
 {
-  "name": "@openmrs/esm-template-app",
-  "version": "4.0.0",
+  "name": "@ampath/esm-billing-admin-app",
+  "version": "1.0.0",
   "license": "MPL-2.0",
-  "description": "An OpenMRS seed application for building microfrontends",
-  "browser": "dist/openmrs-esm-template-app.js",
+  "description": "AMPATH Billing Admin microfrontends",
+  "browser": "dist/ampath-esm-billing-admin-app.js",
   "main": "src/index.ts",
   "source": true,
   "scripts": {
     "start": "openmrs develop",
+    "dev": "openmrs develop --backend=https://kibana.ampath.or.ke --api-url=/openmrs --config-url=https://ngx.ampath.or.ke/o3-config.json --port=9000",
     "serve": "rspack serve --mode=development",
     "build": "rspack --mode production",
     "analyze": "rspack --mode=production --env analyze=true",
@@ -31,14 +32,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openmrs/openmrs-esm-template-app.git"
+    "url": "git+https://github.com/openmrs/ampath-esm-billing-admin-app.git"
   },
-  "homepage": "https://github.com/openmrs/openmrs-esm-template-app#readme",
+  "homepage": "https://github.com/openmrs/ampath-esm-billing-admin-app#readme",
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/openmrs/openmrs-esm-template-app/issues"
+    "url": "https://github.com/openmrs/ampath-esm-billing-admin-app/issues"
   },
   "dependencies": {
     "@carbon/react": "^1.83.0",
