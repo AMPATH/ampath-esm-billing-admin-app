@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ampath/esm-billing-admin-app@workspace:.":
+"@ampath/ampath-esm-billing-admin-app@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@ampath/esm-billing-admin-app@workspace:."
+  resolution: "@ampath/ampath-esm-billing-admin-app@workspace:."
   dependencies:
     "@carbon/react": "npm:^1.83.0"
     "@openmrs/eslint-config": "npm:^2.1.0"

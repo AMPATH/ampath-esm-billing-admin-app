@@ -1,5 +1,5 @@
 {
-  "name": "@ampath/esm-billing-admin-app",
+  "name": "@ampath/ampath-esm-billing-admin-app",
   "version": "1.0.0",
   "license": "MPL-2.0",
   "description": "AMPATH Billing Admin microfrontends",
