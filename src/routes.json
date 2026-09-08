@@ -1,30 +1,40 @@
 {
   "$schema": "https://json.openmrs.org/routes.schema.json",
-  "backendDependencies": {
-    "fhir2": ">=1.2",
-    "webservices.rest": ">=2.2.0"
-  },
+  "backendDependencies": {},
   "extensions": [
     {
-      "name": "Red box",
-      "component": "redBox",
-      "slot": "Boxes"
+      "name": "location-billable-services-link",
+      "slot": "billable-services-left-panel-slot",
+      "component": "locationBillableServicesLink",
+      "meta": {
+        "slot": "location-billable-services-dashboard-slot",
+        "path": "fbs",
+        "layoutMode": "anchored"
+      },
+      "online": true,
+      "offline": true
     },
     {
-      "name": "Blue box",
-      "component": "blueBox",
-      "slot": "Boxes"
-    },
-        {
-      "name": "Brand box",
-      "component": "blueBox",
-      "slot": "Boxes"
+      "name": "location-billable-services",
+      "slot": "location-billable-services-dashboard-slot",
+      "component": "billableServicesAdminRoot",
+      "order": 1,
+      "online": true,
+      "offline": true
     }
   ],
   "pages": [
     {
       "component": "root",
-      "route": "root"
+      "route": "billing-admin"
+    },
+    {
+      "component": "billableServicesAdminRoot",
+      "route": "fbs"
+    },
+    {
+      "component": "billableDrugsAdminRoot",
+      "route": "billable-drugs-admin"
     }
   ]
 }
