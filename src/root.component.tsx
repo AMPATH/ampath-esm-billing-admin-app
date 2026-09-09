@@ -6,7 +6,6 @@ import { WorkspaceContainer } from '@openmrs/esm-framework';
 import BillableServicesRoot from './billable-services/billable-services.root';
 
 const Root: React.FC = () => {
-  console.log('billing admin');
   return (
      <BrowserRouter basename={`${window.spaBase}`}>
       <LeftPanel />
