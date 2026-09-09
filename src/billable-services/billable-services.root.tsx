@@ -5,11 +5,13 @@ import { useSession } from "@openmrs/esm-framework";
 import { fetchBillableServices } from "../resources/billable-services.resource";
 import { type BillableService } from "../shared/types";
 import BillableServicesList from "./list/billable-services-list";
+import AddBillableServiceModal from "./modal/create-billable-service/create-billable-service.modal";
 const BillableServicesRoot: React.FC = ()=>{
     const [billableServices,setBillableServices] = useState<BillableService[]>([]);
     const session = useSession();
     const location = session.sessionLocation;
     const locationUuid = location?.uuid ?? '';
+    const [showCreateBillableServiceModal,setShowCreateBillableServiceModal] = useState<boolean>(false);
     useEffect(()=>{
         if(locationUuid){
             getBillableServices();
@@ -22,6 +24,12 @@ const BillableServicesRoot: React.FC = ()=>{
         }
         console.log({resp});
     }
+    function handleCreateBillableSercice(){
+        setShowCreateBillableServiceModal(false);
+    }
+    function handleShowAddBillableServiceModal(){
+         setShowCreateBillableServiceModal(true);
+    }
    return <>
    <div className={styles.bsContainer}>
      <div className={styles.bsHeader}>
@@ -29,7 +37,7 @@ const BillableServicesRoot: React.FC = ()=>{
             <h5>Facility Billable Services</h5>
         </div>
         <div className={styles.bsAction}>
-            <Button>+ Add new Service</Button>
+            <Button onClick={handleShowAddBillableServiceModal}>+ Add new Service</Button>
         </div>
      </div>
      <div className={styles.bsContent}>
@@ -40,6 +48,14 @@ const BillableServicesRoot: React.FC = ()=>{
           }
            
      </div>
+     {
+        showCreateBillableServiceModal && <AddBillableServiceModal 
+        locationUuid={locationUuid} 
+        open={showCreateBillableServiceModal}
+        onClose={handleCreateBillableSercice}
+        onSuccess = {handleCreateBillableSercice}
+        />
+     }
    </div>
    </>
 }

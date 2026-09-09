@@ -14,9 +14,11 @@ export type BillableService = {
     uuid: string;
     display: string;
   };
+  concept?: Concept
 };
 
 export type ServiceType = {
+  uuid: string;
   display: string;
   resourceVersion: string;
 };
@@ -41,3 +43,40 @@ export type PaymentMode = {
   sortOrder: number | null;
   resourceVersion: string;
 };
+
+export type CreateBillableServiceServicePrice = {
+  paymentMode: string;
+  name: string;
+  price: number;
+};
+export type CreateBillableServiceDto = {
+  name: string;
+  shortName: string;
+  serviceType: string;
+  location: string;
+  servicePrices: CreateBillableServiceServicePrice[];
+  serviceStatus: string;
+  concept?: string;
+};
+
+export type PaymentModesResponse = {
+  results: PaymentMode[];
+};
+export type BillableServiceTypeResp = {
+  setMembers: ServiceType[];
+  resourceVersion: string;
+};
+export type Concept = {
+  display: string;
+  concept: {
+    uuid: string;
+    display: string;
+  };
+  conceptName: {
+    uuid: string;
+    display: string;
+  };
+};
+export type ConceptSearchResponse = {
+  results: Concept[];
+}

@@ -18,6 +18,7 @@ const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices
             <TableHeader>Name</TableHeader>
             <TableHeader>Short Name</TableHeader>
             <TableHeader>Type</TableHeader>
+            <TableHeader>Concept</TableHeader>
             <TableHeader>Location</TableHeader>
             <TableHeader>Prices</TableHeader>
           </TableRow>
@@ -32,6 +33,7 @@ const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices
                     <TableCell>{bs.display}</TableCell>
                     <TableCell>{bs.shortName}</TableCell>
                     <TableCell>{bs.serviceType?.display}</TableCell>
+                    <TableCell>{bs?.concept?.display ?? ''}</TableCell>
                     <TableCell>{bs?.location?.display}</TableCell>
                     <TableCell>
                       {bs.servicePrices.map((sp) => {
