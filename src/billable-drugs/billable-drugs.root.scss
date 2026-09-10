@@ -1,0 +1,26 @@
+.bdLayout{
+   background: #FFF;
+   padding: 15px 15px;
+   display: flex;
+   flex-direction: column;
+   row-gap: 10px;
+   width: 100%;
+    .bdHeader{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        column-gap: 5px;
+           .bdTittle{
+                display: flex;
+                flex-direction: row;
+                width: 80%;
+            }
+            .bdAction{
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-end;
+                width: 20%;
+            }
+    }
+   
+}

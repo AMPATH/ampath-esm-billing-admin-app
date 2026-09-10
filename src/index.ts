@@ -2,6 +2,7 @@ import { getAsyncLifecycle, defineConfigSchema, getSyncLifecycle } from '@openmr
 import { configSchema } from './config-schema';
 import { locationBillableServicesMetaData } from './dashboard-meta/facility-billable-services.meta';
 import { createDashboardLink } from './createDashboardLink';
+import { locationBillableDrugsMetaData } from './dashboard-meta/facility-billable-drugs.meta';
 
 const moduleName = '@ampath/ampath-esm-billing-admin-app';
 
@@ -24,5 +25,10 @@ export const billableDrugsAdminRoot = getAsyncLifecycle(() => import('./billable
 
 export const locationBillableServicesLink = getSyncLifecycle(
   createDashboardLink(locationBillableServicesMetaData as any),
+  options,
+);
+
+export const locationBillableDrugsLink = getSyncLifecycle(
+  createDashboardLink(locationBillableDrugsMetaData as any),
   options,
 );
