@@ -1,18 +1,40 @@
-import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@carbon/react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TextInput } from '@carbon/react';
 import { type BillableDrug } from '../types';
+import styles from './billable-drugs-list.scss';
 
 interface billableDrugsProps {
   billableDrugs: BillableDrug[];
 }
 const BillableDrugsList: React.FC<billableDrugsProps> = ({ billableDrugs }) => {
-  console.log(billableDrugs)
+  const [searchTerm,setSearchTerm] = useState<string>('');
+  const filteredDrugList = useMemo(()=> filterBillableDrugs(searchTerm),[searchTerm,billableDrugs]);
   if (!billableDrugs || billableDrugs.length === 0) {
     return <>No Billable Drugs</>;
   }
+  function filterBillableDrugs(searchString: string): BillableDrug[]{
+      if(!searchString){
+             return billableDrugs;
+      }
+      return billableDrugs.filter((bd)=>{
+          return bd?.name.toLowerCase().trim().includes(searchString.toLowerCase().trim())
+      });
+  }
   return (
     <>
-      <Table size="lg">
+    <div className={styles.listLayout}>
+     <div className={styles.listHeader}>
+        <div className={styles.listSearch}>
+            <TextInput
+                id="drug-search-name"
+                labelText="Search"
+                onChange={(e) => setSearchTerm(e?.target.value)}
+            />
+        </div>
+    </div>
+    <div className={styles.listContent}>
+       <div className={styles.listData}>
+            <Table size="lg">
         <TableHead>
           <TableRow>
             <TableHeader>No</TableHeader>
@@ -24,7 +46,7 @@ const BillableDrugsList: React.FC<billableDrugsProps> = ({ billableDrugs }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          { billableDrugs.map((bd, index) => {
+          { filteredDrugList.map((bd, index) => {
               return (
                 <>
                   <TableRow key={index}>
@@ -44,6 +66,10 @@ const BillableDrugsList: React.FC<billableDrugsProps> = ({ billableDrugs }) => {
             })}
         </TableBody>
       </Table>
+       </div>
+    </div>
+    </div>
+      
     </>
   );
 };
