@@ -1,3 +1,5 @@
+import { type BillableDrug } from "../../billable-drugs/types";
+
 export type BillableServiceResp = {
   results: BillableService[];
 };
@@ -111,6 +113,13 @@ export type DrugReponse = {
 export type BillableDrugsResp = {
   results: BillableDrug[]
 }
-export type BillableDrug = {
 
-}
+export type UpdateBillableServiceDto = {
+  name: string;
+  shortName: string;
+  serviceType: string;
+  location: string;
+  servicePrices: CreateBillableServiceServicePrice[];
+  serviceStatus: string;
+  concept?: string;
+};
