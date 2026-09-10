@@ -14,7 +14,7 @@ export type BillableService = {
     uuid: string;
     display: string;
   };
-  concept?: Concept
+  concept?: Concept;
 };
 
 export type ServiceType = {
@@ -79,4 +79,38 @@ export type Concept = {
 };
 export type ConceptSearchResponse = {
   results: Concept[];
+};
+
+export type Drug = {
+  display: string;
+  uuid: string;
+  name: string;
+  description: string | null;
+  retired: boolean;
+  dosageForm: string;
+  maximumDailyDose: string | null;
+  minimumDailyDose: string | null;
+  concept: Concept;
+  combination: boolean;
+  strength: string | null;
+  drugReferenceMaps: [];
+  ingredients: [];
+  links: Link[];
+  resourceVersion: string;
+};
+
+export type Link = {
+  rel: string;
+  uri: string;
+  resourceAlias: string;
+};
+export type DrugReponse = {
+  results: Drug[];
+}
+
+export type BillableDrugsResp = {
+  results: BillableDrug[]
+}
+export type BillableDrug = {
+
 }

@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LeftPanel from './left-panel/left-panel.component';
 import { WorkspaceContainer } from '@openmrs/esm-framework';
 import BillableServicesRoot from './billable-services/billable-services.root';
+import BillableDrugsRoot from './billable-drugs/billable-drugs.root';
 
 const Root: React.FC = () => {
   return (
@@ -11,7 +12,8 @@ const Root: React.FC = () => {
       <LeftPanel />
       <main className={styles.container}>
         <Routes>
-          <Route path="" element={<BillableServicesRoot />} />
+          <Route path="fbs" element={<BillableServicesRoot />} />
+          <Route path="billable-drugs" element={<BillableDrugsRoot />} />
         </Routes>
       </main>
       <WorkspaceContainer contextKey="home" />

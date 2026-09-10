@@ -21,6 +21,26 @@
       "order": 1,
       "online": true,
       "offline": true
+    },
+    {
+      "name": "location-billable-drugs-link",
+      "slot": "billable-services-left-panel-slot",
+      "component": "locationBillableDrugsLink",
+      "meta": {
+        "slot": "location-billable-drugs-dashboard-slot",
+        "path": "billable-drugs",
+        "layoutMode": "anchored"
+      },
+      "online": true,
+      "offline": true
+    },
+    {
+      "name": "location-billable-drugs",
+      "slot": "location-billable-drugs-dashboard-slot",
+      "component": "billableDrugsAdminRoot",
+      "order": 2,
+      "online": true,
+      "offline": true
     }
   ],
   "pages": [
@@ -34,7 +54,7 @@
     },
     {
       "component": "billableDrugsAdminRoot",
-      "route": "billable-drugs-admin"
+      "route": "billable-drugs"
     }
   ]
 }
