@@ -1,0 +1,63 @@
+.formRow{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    column-gap: 10px;
+    padding: 10px 10px;
+}
+.formInputHalfw{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+.formInputThirdw{
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    row-gap: 10px;
+}
+.paymentModeW{
+    width: 50%;
+}
+.priceW{
+    width: 30%;
+}
+.addSp{
+    width: 20%;
+}
+.fullW{
+    width: 100%;
+}
+.conceptsList {
+  background-color: #fefefe;;
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 1px solid #fefefe;;
+
+  li:hover {
+    background-color: #fefefe;;
+  }
+}
+.formCol{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    column-gap: 10px;
+    padding: 10px 10px;
+}
+.service {
+  padding: 10px 10px;
+}
+.service:hover{
+    cursor: pointer;
+}
+.conceptClearAction{
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+}
+.conceptSearch{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}

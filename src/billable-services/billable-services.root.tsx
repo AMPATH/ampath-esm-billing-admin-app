@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from './billable-services.root.scss';
-import { Button } from "@carbon/react";
+import { Button, InlineLoading } from "@carbon/react";
 import { useSession } from "@openmrs/esm-framework";
 import { fetchBillableServices } from "../resources/billable-services.resource";
 import { type BillableService } from "../shared/types";
@@ -12,17 +12,23 @@ const BillableServicesRoot: React.FC = ()=>{
     const location = session.sessionLocation;
     const locationUuid = location?.uuid ?? '';
     const [showCreateBillableServiceModal,setShowCreateBillableServiceModal] = useState<boolean>(false);
+    const [selectedBillableService,setSelectedBillableService] = useState<BillableService | null>(null);
+    const [loading,setLoading] = useState(false);
     useEffect(()=>{
         if(locationUuid){
             getBillableServices();
         }
     },[locationUuid]);
+    if(loading){
+        return <InlineLoading  description='Please wait..'/>
+    }
     async function getBillableServices(){
+        setLoading(true);
         const resp = await fetchBillableServices(location?.uuid ?? '');
         if(resp){
            setBillableServices(resp);
         }
-        console.log({resp});
+        setLoading(false);
     }
     function handleCreateBillableSercice(){
         setShowCreateBillableServiceModal(false);
@@ -42,8 +48,8 @@ const BillableServicesRoot: React.FC = ()=>{
      </div>
      <div className={styles.bsContent}>
           {
-            billableServices && billableServices.length > 0 ? (<>
-            <BillableServicesList billableServices={billableServices} />
+            billableServices && billableServices.length > 0 && locationUuid ? (<>
+            <BillableServicesList billableServices={billableServices} locationUuid={locationUuid}/>
             </>) : (<></>)
           }
            

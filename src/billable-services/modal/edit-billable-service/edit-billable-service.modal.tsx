@@ -4,6 +4,7 @@ import {
   ComboBox,
   Modal,
   ModalBody,
+  Search,
   Table,
   TableBody,
   TableCell,
@@ -12,46 +13,49 @@ import {
   TableRow,
   TextInput,
 } from '@carbon/react';
-import styles from './create-billable-service.modal.scss';
-import { ResponsiveWrapper, showSnackbar } from '@openmrs/esm-framework';
+import styles from './edit-billable-service.modal.scss';
+import { showSnackbar } from '@openmrs/esm-framework';
 import {
   type PaymentMode,
   type ServicePrice,
   type ServiceType,
-  type CreateBillableServiceDto,
   type Concept,
+  type BillableService,
+  type UpdateBillableServiceDto,
 } from '../../../shared/types';
 import {
-  createBillableSrevice,
   fetchBillableServiceTypes,
   fetchPaymentModes,
+  updateBillableService,
 } from '../../../resources/billable-services.resource';
 import { conceptSearch } from '../../../resources/concept.service';
 
-interface AddBillableServiceModalProps {
+interface EditBillableServiceModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   locationUuid: string;
+  billableService: BillableService;
 }
-const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
+const EditBillableServiceModal: React.FC<EditBillableServiceModalProps> = ({
   open,
   onClose,
   onSuccess,
   locationUuid,
+  billableService
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [name, setName] = useState<string>('');
-  const [shortName, setShortName] = useState<string>('');
-  const [serviceType, setServiceType] = useState<ServiceType | null>();
-  const [servicePrices, setServicePrices] = useState<ServicePrice[]>([]);
-  const [selectedServicePrices, setSelectedServicePrices] = useState<any[]>([]);
+  const [name, setName] = useState<string>(billableService?.name ?? '');
+  const [shortName, setShortName] = useState<string>(billableService.shortName ?? '');
+  const [serviceType, setServiceType] = useState<ServiceType | null>(billableService.serviceType);
+  const [servicePrices, setServicePrices] = useState<ServicePrice[]>(billableService.servicePrices);
+  const [selectedServicePrices, setSelectedServicePrices] = useState<any[]>(billableService?.servicePrices ?? []);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<number>(0);
   const [paymentModes, setPaymentModes] = useState<PaymentMode[]>([]);
   const [billableServiceTypes, setBillableServiceTypes] = useState<ServiceType[]>([]);
-  const [searchTerm,setSearchTerm] = useState<string>('');
-  const [selectedConcept,setSelectedConcept] = useState<Concept | null>(null);
+  const [searchTerm,setSearchTerm] = useState<string>(billableService?.name ?? '');
+  const [selectedConcept,setSelectedConcept] = useState<Concept | null>(billableService.concept ?? null);
   const [conceptResults,setConceptResults] = useState<Concept[]>([]);
   useEffect(() => {
     if (locationUuid) {
@@ -83,33 +87,33 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
   async function handleAddBillableServiceItem() {
     setLoading(true);
     const addBillableServiceDto = getBillableServiceDto();
-    if(!isValidCreateBillableServiceDto(addBillableServiceDto)){
+    if(!isValidUpdateBillableServiceDto(addBillableServiceDto)){
        setLoading(false);
        return false;
     }
 
     try {
-      const resp = await createBillableSrevice(addBillableServiceDto);
+      const resp = await updateBillableService(billableService.uuid,addBillableServiceDto);
       if(resp){
         showSnackbar({
         kind: 'success',
-        title: 'Billable service created succesfully',
-        subtitle: `${name} billable service added succesfully`,
+        title: 'Billable service updated succesfully',
+        subtitle: `${name} billable service updated succesfully`,
       });
       onSuccess();
       }
     } catch (error) {
       showSnackbar({
         kind: 'error',
-        title: 'Error creating billable service',
-        subtitle: 'An error occurred while adding the billable service. Kindy retry or contact support',
+        title: 'Error Editing billable service',
+        subtitle: 'An error occurred editing the billable service. Kindy retry or contact support',
       });
     } finally {
       setLoading(false);
     }
   }
-  function getBillableServiceDto(): CreateBillableServiceDto {
-    const createBillableServiceDto: CreateBillableServiceDto = {
+  function getBillableServiceDto(): UpdateBillableServiceDto {
+    const updateBillableServiceDto: UpdateBillableServiceDto = {
       name: name,
       shortName: shortName,
       serviceType: serviceType?.uuid ?? '',
@@ -124,9 +128,9 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
       serviceStatus: "ENABLED",
     };
     if(selectedConcept){
-        createBillableServiceDto['concept'] = selectedConcept?.concept?.uuid ?? ''
+        updateBillableServiceDto['concept'] = selectedConcept?.concept?.uuid ?? ''
     }
-    return createBillableServiceDto;
+    return updateBillableServiceDto;
   }
   function holderFunction() {
     return;
@@ -160,7 +164,6 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
     setSelectedPrice(value?.target?.value ? Number(value?.target?.value) : 0);
   }
   function handleRemoveSp(i: number){
-      debugger;
      const newSelectedServicePrices = selectedServicePrices.filter((s,index)=>{
          return index !== i;
      });
@@ -183,8 +186,8 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
     setSearchTerm('');
     setSelectedConcept(null);
   }
-  function isValidCreateBillableServiceDto(createBillableServiceDto: CreateBillableServiceDto): boolean{
-    if(!createBillableServiceDto.location){
+  function isValidUpdateBillableServiceDto(updateBillableServiceDto: UpdateBillableServiceDto): boolean{
+    if(!updateBillableServiceDto.location){
         showSnackbar({
           kind: 'error',
           title: 'Missing location',
@@ -192,7 +195,7 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
         });
         return false;
     }
-    if(!createBillableServiceDto.name){
+    if(!updateBillableServiceDto.name){
       showSnackbar({
           kind: 'error',
           title: 'Missing Billable service name',
@@ -200,7 +203,7 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
         });
         return false;
     }
-    if(!createBillableServiceDto.shortName){
+    if(!updateBillableServiceDto.shortName){
       showSnackbar({
           kind: 'error',
           title: 'Missing Billable service short name',
@@ -208,7 +211,7 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
         });
         return false;
     }
-    if(!createBillableServiceDto.servicePrices){
+    if(!updateBillableServiceDto.servicePrices){
         showSnackbar({
             kind: 'error',
             title: 'Missing Billable service prices',
@@ -216,7 +219,7 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
         });
          return false;
     }
-    if(createBillableServiceDto.servicePrices && createBillableServiceDto.servicePrices.length === 0){
+    if(updateBillableServiceDto.servicePrices && updateBillableServiceDto.servicePrices.length === 0){
         showSnackbar({
             kind: 'error',
             title: 'Missing Billable service prices',
@@ -224,7 +227,7 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
         });
          return false;
     }
-    if(!createBillableServiceDto.serviceType){
+    if(!updateBillableServiceDto.serviceType){
       showSnackbar({
             kind: 'error',
             title: 'Missing Billable service type',
@@ -237,22 +240,32 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
   return (
     <>
       <Modal
-        modalHeading="Add Billable Service"
+        modalHeading="Edit Billable Service"
         open={open}
         size="md"
         onSecondarySubmit={onClose}
         onRequestClose={onClose}
         onRequestSubmit={loading ? holderFunction : handleAddBillableServiceItem}
-        primaryButtonText={loading ? 'Creating...' : 'Add'}
+        primaryButtonText={loading ? 'Editing...' : 'Save'}
         secondaryButtonText="Close"
       >
         <ModalBody>
-          <div className={styles.AddBillableServiceModalLayout}>
+          <div className={styles.EditBillableServiceModalLayout}>
             <div className={styles.formRow}>
-              <TextInput id="billable-service-name" labelText="Name"  onChange={(e)=>setName(e?.target.value)}/>
+              <TextInput 
+              id="billable-service-name" 
+              labelText="Name"  
+              onChange={(e)=>setName(e?.target.value)}
+              value={name}
+              />
             </div>
             <div className={styles.formRow}>
-              <TextInput id="billable-service-short-name" labelText="Short Name"  onChange={(e)=>setShortName(e?.target.value)}/>
+              <TextInput 
+              id="billable-service-short-name" 
+              labelText="Short Name"  
+              onChange={(e)=>setShortName(e?.target.value)}
+              value={shortName}
+              />
             </div>
             <div className={styles.formRow}>
               <div className={styles.fullW}>
@@ -266,18 +279,16 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
                 />
               </div>
             </div>
-            <div className={styles.formCol}>
-               <div className={styles.fullW}>
+             <div className={styles.formRow}>
+               <div className={styles.conceptSearch}>
                 <TextInput 
                 id="conceptsSearch" 
                 labelText='Associated concept' 
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                  placeholder='Search associated concept'
-                 value={selectedConcept?.concept.display ?? searchTerm}
+                 value={selectedConcept?.concept?.display ?? searchTerm}
                 />
-               <Button kind='secondary' onClick={handleConceptClear}>Clear</Button>
-              </div>
-              {
+                {
                 conceptResults && conceptResults.length > 0 ? (<>
                 <div className={styles.fullW}>
                     <ul className={styles.conceptsList}>
@@ -298,6 +309,11 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
                
                 
               }
+              </div>
+              <div className={styles.conceptClearAction}>
+                 <Button kind='secondary' onClick={handleConceptClear}>Clear</Button>
+              </div>
+              
             </div>
             <div className={styles.formRow}>
               <div className={styles.paymentModeW}>
@@ -359,4 +375,4 @@ const AddBillableServiceModal: React.FC<AddBillableServiceModalProps> = ({
     </>
   );
 };
-export default AddBillableServiceModal;
+export default EditBillableServiceModal;

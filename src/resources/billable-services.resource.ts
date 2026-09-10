@@ -4,6 +4,7 @@ import {
   type BillableServiceResp,
   type PaymentModesResponse,
   type BillableServiceTypeResp,
+  type UpdateBillableServiceDto,
 } from '../shared/types';
 import { BILLABLE_SERVICE_CONCEPT_UUID } from '../shared/constants';
 
@@ -36,4 +37,24 @@ export async function fetchBillableServiceTypes() {
   const response = await openmrsFetch(url);
   const data = (await response.json()) as BillableServiceTypeResp;
   return data.setMembers ?? [];
+}
+
+export async function updateBillableService(billableServiceUuid: string ,payload: UpdateBillableServiceDto) {
+  const url = `${restBaseUrl}/billing/billableService/${billableServiceUuid}`;
+  return openmrsFetch(url, {
+    method: 'POST',
+    body: payload,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+export async function deleteBillableService(billableServiceUuid: string) {
+  const url = `${restBaseUrl}/billing/billableService/${billableServiceUuid}`;
+  return openmrsFetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 }
