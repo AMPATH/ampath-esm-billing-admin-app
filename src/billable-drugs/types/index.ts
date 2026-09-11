@@ -7,6 +7,7 @@ export type DrugPrice = {
 }
 
 export type BillableDrug = {
+  uuid: string;
   name: string;
   shortName:  string;
   drug: Drug;
@@ -18,6 +19,14 @@ export type BillableDrug = {
   drugPrices: DrugPrice[];
 }
 export type CreateBillableDrugDto = {
+  name: string;
+  shortName: string;
+  drug: string;
+  location: string;
+  status:  string;
+  drugPrices: DrugPrice[];
+}
+export type EditBillableDrugDto = {
   name: string;
   shortName: string;
   drug: string;
