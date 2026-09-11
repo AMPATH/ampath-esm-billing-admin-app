@@ -4,7 +4,6 @@ import {
   ComboBox,
   Modal,
   ModalBody,
-  Search,
   Table,
   TableBody,
   TableCell,
@@ -13,37 +12,37 @@ import {
   TableRow,
   TextInput,
 } from '@carbon/react';
-import styles from './create-billable-drug.modal.scss';
+import styles from './edit-billable-drug.modal.scss';
 import { showSnackbar } from '@openmrs/esm-framework';
-import { type PaymentMode, type ServicePrice, type ServiceType, type Drug } from '../../shared/types';
-import { type CreateBillableDrugDto } from '../types';
-import { drugSearch } from '../../resources/drug.resource';
-import { fetchPaymentModes } from '../../resources/billable-services.resource';
-import { createBillableDrugs } from '../../resources/billable-drug.resource';
+import { type PaymentMode, type Drug } from '../../../shared/types';
+import { type DrugPrice, type BillableDrug, type EditBillableDrugDto } from '../../types';
+import { drugSearch } from '../../../resources/drug.resource';
+import { fetchPaymentModes } from '../../../resources/billable-services.resource';
+import { updateBillableDrugs } from '../../../resources/billable-drug.resource';
 
-interface CreateBillableDrugModalProps {
+interface EditBillableDrugModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   locationUuid: string;
+  billableDrug: BillableDrug;
 }
-const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
+const EditBillableDrugModal: React.FC<EditBillableDrugModalProps> = ({
   open,
   onClose,
   onSuccess,
   locationUuid,
+  billableDrug,
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [name, setName] = useState<string>('');
-  const [shortName, setShortName] = useState<string>('');
-  const [serviceType, setServiceType] = useState<ServiceType | null>();
-  const [servicePrices, setServicePrices] = useState<ServicePrice[]>([]);
-  const [selectedServicePrices, setSelectedServicePrices] = useState<any[]>([]);
+  const [name, setName] = useState<string>(billableDrug?.name ?? '');
+  const [shortName, setShortName] = useState<string>(billableDrug?.shortName ?? '');
+  const [drugPrices, setDrugPrices] = useState<DrugPrice[]>(billableDrug.drugPrices ?? []);
+  const [selectedDrugPrices, setSelectedDrugPrices] = useState<any[]>(billableDrug.drugPrices ?? []);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<number>(0);
   const [paymentModes, setPaymentModes] = useState<PaymentMode[]>([]);
-  const [BillableDrugTypes, setBillableDrugTypes] = useState<ServiceType[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>(billableDrug.name ?? '');
   const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   useEffect(() => {
@@ -67,39 +66,39 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
 
   async function handleAddBillableDrugItem() {
     setLoading(true);
-    const addBillableDrugDto = getBillableDrugDto();
-    if (!isValidCreateBillableDrugDto(addBillableDrugDto)) {
+    const updateBillableDrugDto = getBillableDrugDto();
+    if (!isValidEditBillableDrugDto(updateBillableDrugDto)) {
       setLoading(false);
       return false;
     }
 
     try {
-      const resp = await createBillableDrugs(addBillableDrugDto);
+      const resp = await updateBillableDrugs(billableDrug.uuid, updateBillableDrugDto);
       if (resp) {
         showSnackbar({
           kind: 'success',
-          title: 'Billable Drug created succesfully',
-          subtitle: `${name} Billable Drug added succesfully`,
+          title: 'Billable Drug updated succesfully',
+          subtitle: `${name} Billable Drug updated succesfully`,
         });
         onSuccess();
       }
     } catch (error) {
       showSnackbar({
         kind: 'error',
-        title: 'Error Adding Claim Line',
-        subtitle: 'An error occurred while adding the claim line. Kindy retry or contact support',
+        title: 'Error updating billable drug',
+        subtitle: 'An error occurred while adding updating billable drug. Kindy retry or contact support',
       });
     } finally {
       setLoading(false);
     }
   }
-  function getBillableDrugDto(): CreateBillableDrugDto {
-    const createBillableDrugDto: CreateBillableDrugDto = {
+  function getBillableDrugDto(): EditBillableDrugDto {
+    const editBillableDrugDto: EditBillableDrugDto = {
       name: name,
       shortName: shortName,
       drug: selectedDrug?.uuid ?? '',
       location: locationUuid,
-      drugPrices: selectedServicePrices.map((sp) => {
+      drugPrices: selectedDrugPrices.map((sp) => {
         return {
           paymentMode: sp.paymentMode.uuid,
           name: sp.paymentMode.name,
@@ -109,28 +108,21 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       status: 'ENABLED',
     };
 
-    return createBillableDrugDto;
+    return editBillableDrugDto;
   }
   function holderFunction() {
     return;
   }
-  function handleSelectBillableDrugType(selectedBillServiceType: ServiceType | null | undefined) {
-    if (selectedBillServiceType) {
-      setServiceType(selectedBillServiceType);
-    } else {
-      setServiceType(null);
-    }
-  }
   function handleAddServicePriceControl() {
     const newServicePrices = [
-      ...selectedServicePrices,
+      ...selectedDrugPrices,
       {
         name: selectedPaymentMode?.name ?? '',
         paymentMode: selectedPaymentMode ?? '',
         price: selectedPrice ?? 0,
       },
     ];
-    setSelectedServicePrices(newServicePrices);
+    setSelectedDrugPrices(newServicePrices);
   }
   function handleSelectPaymentMode(paymentMode: PaymentMode | null | undefined) {
     if (paymentMode) {
@@ -143,10 +135,10 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
     setSelectedPrice(value?.target?.value ? Number(value?.target?.value) : 0);
   }
   function handleRemoveSp(i: number) {
-    const newSelectedServicePrices = selectedServicePrices.filter((s, index) => {
+    const newSelectedDrugPrices = selectedDrugPrices.filter((s, index) => {
       return index !== i;
     });
-    setSelectedServicePrices(newSelectedServicePrices);
+    setSelectedDrugPrices(newSelectedDrugPrices);
   }
   async function getDrugs() {
     if (searchTerm && searchTerm.length > 3) {
@@ -165,8 +157,8 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
     setSearchTerm('');
     setSelectedDrug(null);
   }
-  function isValidCreateBillableDrugDto(createBillableDrugDto: CreateBillableDrugDto): boolean {
-    if (!createBillableDrugDto.location) {
+  function isValidEditBillableDrugDto(editBillableDrugDto: EditBillableDrugDto): boolean {
+    if (!editBillableDrugDto.location) {
       showSnackbar({
         kind: 'error',
         title: 'Missing location',
@@ -174,7 +166,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!createBillableDrugDto.name) {
+    if (!editBillableDrugDto.name) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Billable Drug name',
@@ -182,7 +174,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!createBillableDrugDto.shortName) {
+    if (!editBillableDrugDto.shortName) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Billable Drug short name',
@@ -190,7 +182,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!createBillableDrugDto.drug) {
+    if (!editBillableDrugDto.drug) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Drug',
@@ -198,7 +190,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!createBillableDrugDto.drugPrices) {
+    if (!editBillableDrugDto.drugPrices) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Billable Drug prices',
@@ -212,7 +204,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
   return (
     <>
       <Modal
-        modalHeading="Add Billable Drug"
+        modalHeading="Edit Billable Drug"
         open={open}
         size="md"
         onSecondarySubmit={onClose}
@@ -222,15 +214,21 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
         secondaryButtonText="Close"
       >
         <ModalBody>
-          <div className={styles.createBillableDrugModalLayout}>
+          <div className={styles.EditBillableDrugModalLayout}>
             <div className={styles.formRow}>
-              <TextInput id="billable-drug-name" labelText="Name" onChange={(e) => setName(e?.target.value)} />
+              <TextInput
+                id="billable-drug-name"
+                labelText="Name"
+                onChange={(e) => setName(e?.target.value)}
+                value={name}
+              />
             </div>
             <div className={styles.formRow}>
               <TextInput
                 id="billable-drug-short-name"
                 labelText="Short Name"
                 onChange={(e) => setShortName(e?.target.value)}
+                value={shortName}
               />
             </div>
             <div className={styles.formRow}>
@@ -293,7 +291,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
                 </Button>
               </div>
             </div>
-            {selectedServicePrices && selectedServicePrices.length > 0 ? (
+            {selectedDrugPrices && selectedDrugPrices.length > 0 ? (
               <>
                 <Table size="md">
                   <TableHead>
@@ -305,7 +303,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {selectedServicePrices.map((sp, index) => {
+                    {selectedDrugPrices.map((sp, index) => {
                       return (
                         <>
                           <TableRow key={index}>
@@ -333,4 +331,4 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
     </>
   );
 };
-export default CreateBillableDrugModal;
+export default EditBillableDrugModal;

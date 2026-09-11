@@ -8,8 +8,9 @@ import { showSnackbar } from '@openmrs/esm-framework';
 interface billableServiceProps {
   billableServices: BillableService[];
   locationUuid: string;
+  onRefresh: ()=>void;
 }
-const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices, locationUuid }) => {
+const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices, locationUuid, onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading,setLoading] = useState(false);
   const filteredBillableServicesList = useMemo(
@@ -34,6 +35,7 @@ const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices
   }
   function handleCloseEditBillableServiceModal() {
     setShowEditBillableServiceModal(false);
+    onRefresh();
   }
   function handleEditBillableService(billableService: BillableService) {
     setSelectedBillableService(billableService);
@@ -49,6 +51,7 @@ const BillableServicesList: React.FC<billableServiceProps> = ({ billableServices
         title: 'Error deleting billable service',
         subtitle: 'An error ocurred while deleting the billable service. Kindly try again or contact support',
       });
+      onRefresh();
     }finally{
       setLoading(false);
     }
