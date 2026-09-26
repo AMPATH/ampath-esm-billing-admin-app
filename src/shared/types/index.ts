@@ -123,3 +123,15 @@ export type UpdateBillableServiceDto = {
   serviceStatus: string;
   concept?: string;
 };
+
+export type SetMember = {
+  uuid: string;
+  display:  string;
+  resourceVersion: string;
+}
+
+export type HieProductCatalogueDrugsResponse = {
+  uuid: string;
+  display: string;
+  setMembers: SetMember[];
+}
