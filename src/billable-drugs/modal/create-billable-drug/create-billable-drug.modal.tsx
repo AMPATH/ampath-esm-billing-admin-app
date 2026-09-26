@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   ComboBox,
@@ -15,9 +15,9 @@ import {
 } from '@carbon/react';
 import styles from './create-billable-drug.modal.scss';
 import { showSnackbar } from '@openmrs/esm-framework';
-import { type PaymentMode, type ServicePrice, type ServiceType, type Drug } from '../../../shared/types';
+import { type PaymentMode, type ServicePrice, type ServiceType, type Drug, type SetMember } from '../../../shared/types';
 import { type CreateBillableDrugDto } from '../../types';
-import { drugSearch } from '../../../resources/drug.resource';
+import { drugSearch, fetchDrugCatalogueSearch } from '../../../resources/drug.resource';
 import { fetchPaymentModes } from '../../../resources/billable-services.resource';
 import { createBillableDrugs } from '../../../resources/billable-drug.resource';
 
@@ -44,20 +44,15 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
   const [paymentModes, setPaymentModes] = useState<PaymentMode[]>([]);
   const [BillableDrugTypes, setBillableDrugTypes] = useState<ServiceType[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
-  const [drugResults, setDrugResults] = useState<Drug[]>([]);
+  const [selectedDrug, setSelectedDrug] = useState<SetMember | null>(null);
+  const [drugResults, setDrugResults] = useState<SetMember[]>([]);
+  const filteredDrugResults = useMemo(()=>filterCatalogueDrug(searchTerm ?? ''),[searchTerm,drugResults]);
   useEffect(() => {
     if (locationUuid) {
+      getHieCatalogueDrugs();
       getPaymentModes();
     }
   }, []);
-  useEffect(() => {
-    const controller = new AbortController();
-    getDrugs();
-    return () => {
-      controller.abort();
-    };
-  }, [searchTerm]);
   async function getPaymentModes() {
     const resp = await fetchPaymentModes();
     if (resp) {
@@ -148,15 +143,49 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
     });
     setSelectedServicePrices(newSelectedServicePrices);
   }
-  async function getDrugs() {
-    if (searchTerm && searchTerm.length > 3) {
-      const resp = await drugSearch(searchTerm);
-      if (resp) {
-        setDrugResults(resp);
-      }
-    }
+  async function getHieCatalogueDrugs(){
+     try{
+        const resp = await fetchDrugCatalogueSearch();
+        if(resp){
+           const formattedDrugResult = formatDrugResults(resp);
+           setDrugResults(formattedDrugResult);
+        }
+     }catch(error){
+        showSnackbar({
+          kind: 'error',
+          title: 'Error fetching Catalogue drugs',
+          subtitle: 'An error occurred while fetching the catalogue drugs, kindly reload or contact support'
+        });
+     }
   }
-  function handleDrugSelect(selectedDrug: Drug) {
+  function formatDrugResults(drugResults: SetMember[]){
+       if(!drugResults || drugResults.length === 0){
+          return [];
+       }
+       return drugResults.map((d)=>{
+               return {
+                 ...d,
+                 display: formatDrugDisplayName(d.display)
+              }
+        });
+  }
+  function formatDrugDisplayName(drugName: string){
+     const drugNameArr = drugName.split('(GE');
+     if(drugNameArr.length > 0){
+        return drugNameArr[0];
+     }else{
+       return drugName;
+     }
+  }
+  function filterCatalogueDrug(searchTerm: string){
+     if(!searchTerm){
+        return drugResults;
+     }
+     return drugResults.filter((d)=>{
+        return d.display.toLowerCase().trim().includes(searchTerm);
+     });
+  }
+  function handleDrugSelect(selectedDrug: SetMember) {
     setSearchTerm('');
     setSelectedDrug(selectedDrug);
     setDrugResults([]);
@@ -194,7 +223,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       showSnackbar({
         kind: 'error',
         title: 'Missing Drug',
-        subtitle: 'Billable Drug short name not set',
+        subtitle: 'Billable Drug short not set',
       });
       return false;
     }
@@ -245,11 +274,11 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
                   />
                 </div>
                 <div>
-                  {drugResults && drugResults.length > 0 ? (
+                  {filteredDrugResults && filteredDrugResults.length > 0 && searchTerm.length > 3 ? (
                     <>
                       <div className={styles.fullW}>
                         <ul className={styles.drugsList}>
-                          {drugResults?.map((drugResult) => (
+                          {filteredDrugResults?.map((drugResult) => (
                             <li
                               className={styles.service}
                               key={drugResult.uuid}

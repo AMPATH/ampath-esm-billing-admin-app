@@ -53,6 +53,7 @@ const BillableDrugsList: React.FC<billableDrugsProps> = ({ billableDrugs, locati
         });
       }finally{
         setLoading(false);
+        onRefresh();
       }
   }
   if(loading){
