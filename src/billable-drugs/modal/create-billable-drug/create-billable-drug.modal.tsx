@@ -4,7 +4,6 @@ import {
   ComboBox,
   Modal,
   ModalBody,
-  Search,
   Table,
   TableBody,
   TableCell,
@@ -15,9 +14,12 @@ import {
 } from '@carbon/react';
 import styles from './create-billable-drug.modal.scss';
 import { showSnackbar } from '@openmrs/esm-framework';
-import { type PaymentMode, type ServicePrice, type ServiceType, type Drug, type SetMember } from '../../../shared/types';
+import {
+  type PaymentMode,
+  type Drug,
+} from '../../../shared/types';
 import { type CreateBillableDrugDto } from '../../types';
-import { drugSearch, fetchDrugCatalogueSearch } from '../../../resources/drug.resource';
+import { fetchAmpathOrderableDrugs } from '../../../resources/drug.resource';
 import { fetchPaymentModes } from '../../../resources/billable-services.resource';
 import { createBillableDrugs } from '../../../resources/billable-drug.resource';
 
@@ -36,27 +38,38 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
   const [shortName, setShortName] = useState<string>('');
-  const [serviceType, setServiceType] = useState<ServiceType | null>();
-  const [servicePrices, setServicePrices] = useState<ServicePrice[]>([]);
   const [selectedServicePrices, setSelectedServicePrices] = useState<any[]>([]);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<number>(0);
   const [paymentModes, setPaymentModes] = useState<PaymentMode[]>([]);
-  const [BillableDrugTypes, setBillableDrugTypes] = useState<ServiceType[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedDrug, setSelectedDrug] = useState<SetMember | null>(null);
-  const [drugResults, setDrugResults] = useState<SetMember[]>([]);
-  const filteredDrugResults = useMemo(()=>filterCatalogueDrug(searchTerm ?? ''),[searchTerm,drugResults]);
+  const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
+  const [drugResults, setDrugResults] = useState<Drug[]>([]);
   useEffect(() => {
     if (locationUuid) {
-      getHieCatalogueDrugs();
       getPaymentModes();
     }
   }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    getCatalogDrugs();
+    return () => {
+      controller.abort();
+    };
+  }, [searchTerm]);
   async function getPaymentModes() {
     const resp = await fetchPaymentModes();
     if (resp) {
       setPaymentModes(resp);
+    }
+  }
+
+  async function getCatalogDrugs() {
+    if (searchTerm && searchTerm.length > 3) {
+      const resp = await fetchAmpathOrderableDrugs(searchTerm);
+      if (resp) {
+        setDrugResults(resp);
+      }
     }
   }
 
@@ -109,13 +122,6 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
   function holderFunction() {
     return;
   }
-  function handleSelectBillableDrugType(selectedBillServiceType: ServiceType | null | undefined) {
-    if (selectedBillServiceType) {
-      setServiceType(selectedBillServiceType);
-    } else {
-      setServiceType(null);
-    }
-  }
   function handleAddServicePriceControl() {
     const newServicePrices = [
       ...selectedServicePrices,
@@ -143,49 +149,8 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
     });
     setSelectedServicePrices(newSelectedServicePrices);
   }
-  async function getHieCatalogueDrugs(){
-     try{
-        const resp = await fetchDrugCatalogueSearch();
-        if(resp){
-           const formattedDrugResult = formatDrugResults(resp);
-           setDrugResults(formattedDrugResult);
-        }
-     }catch(error){
-        showSnackbar({
-          kind: 'error',
-          title: 'Error fetching Catalogue drugs',
-          subtitle: 'An error occurred while fetching the catalogue drugs, kindly reload or contact support'
-        });
-     }
-  }
-  function formatDrugResults(drugResults: SetMember[]){
-       if(!drugResults || drugResults.length === 0){
-          return [];
-       }
-       return drugResults.map((d)=>{
-               return {
-                 ...d,
-                 display: formatDrugDisplayName(d.display)
-              }
-        });
-  }
-  function formatDrugDisplayName(drugName: string){
-     const drugNameArr = drugName.split('(GE');
-     if(drugNameArr.length > 0){
-        return drugNameArr[0];
-     }else{
-       return drugName;
-     }
-  }
-  function filterCatalogueDrug(searchTerm: string){
-     if(!searchTerm){
-        return drugResults;
-     }
-     return drugResults.filter((d)=>{
-        return d.display.toLowerCase().trim().includes(searchTerm);
-     });
-  }
-  function handleDrugSelect(selectedDrug: SetMember) {
+
+  function handleDrugSelect(selectedDrug: Drug) {
     setSearchTerm('');
     setSelectedDrug(selectedDrug);
     setDrugResults([]);
@@ -227,7 +192,7 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!createBillableDrugDto.drugPrices) {
+    if (!createBillableDrugDto.drugPrices || createBillableDrugDto.drugPrices.length === 0) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Billable Drug prices',
@@ -274,11 +239,11 @@ const CreateBillableDrugModal: React.FC<CreateBillableDrugModalProps> = ({
                   />
                 </div>
                 <div>
-                  {filteredDrugResults && filteredDrugResults.length > 0 && searchTerm.length > 3 ? (
+                  {drugResults && drugResults.length > 0 && searchTerm.length > 3 ? (
                     <>
                       <div className={styles.fullW}>
                         <ul className={styles.drugsList}>
-                          {filteredDrugResults?.map((drugResult) => (
+                          {drugResults?.map((drugResult) => (
                             <li
                               className={styles.service}
                               key={drugResult.uuid}

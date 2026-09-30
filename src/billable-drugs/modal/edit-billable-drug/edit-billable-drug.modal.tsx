@@ -16,7 +16,7 @@ import styles from './edit-billable-drug.modal.scss';
 import { showSnackbar } from '@openmrs/esm-framework';
 import { type PaymentMode, type Drug } from '../../../shared/types';
 import { type DrugPrice, type BillableDrug, type EditBillableDrugDto } from '../../types';
-import { drugSearch } from '../../../resources/drug.resource';
+import { fetchAmpathOrderableDrugs } from '../../../resources/drug.resource';
 import { fetchPaymentModes } from '../../../resources/billable-services.resource';
 import { updateBillableDrugs } from '../../../resources/billable-drug.resource';
 
@@ -52,7 +52,7 @@ const EditBillableDrugModal: React.FC<EditBillableDrugModalProps> = ({
   }, []);
   useEffect(() => {
     const controller = new AbortController();
-    getDrugs();
+     getCatalogDrugs();
     return () => {
       controller.abort();
     };
@@ -140,13 +140,13 @@ const EditBillableDrugModal: React.FC<EditBillableDrugModalProps> = ({
     });
     setSelectedDrugPrices(newSelectedDrugPrices);
   }
-  async function getDrugs() {
-    if (searchTerm && searchTerm.length > 3) {
-      const resp = await drugSearch(searchTerm);
-      if (resp) {
-        setDrugResults(resp);
-      }
-    }
+  async function getCatalogDrugs() {
+     if (searchTerm && searchTerm.length > 3) {
+       const resp = await fetchAmpathOrderableDrugs(searchTerm);
+       if (resp) {
+         setDrugResults(resp);
+       }
+     }
   }
   function handleDrugSelect(selectedDrug: Drug) {
     setSearchTerm('');
@@ -190,7 +190,7 @@ const EditBillableDrugModal: React.FC<EditBillableDrugModalProps> = ({
       });
       return false;
     }
-    if (!editBillableDrugDto.drugPrices) {
+    if (!editBillableDrugDto.drugPrices || editBillableDrugDto.drugPrices.length === 0) {
       showSnackbar({
         kind: 'error',
         title: 'Missing Billable Drug prices',
@@ -210,7 +210,7 @@ const EditBillableDrugModal: React.FC<EditBillableDrugModalProps> = ({
         onSecondarySubmit={onClose}
         onRequestClose={onClose}
         onRequestSubmit={loading ? holderFunction : handleAddBillableDrugItem}
-        primaryButtonText={loading ? 'Creating...' : 'Add'}
+        primaryButtonText={loading ? 'Creating...' : 'Update'}
         secondaryButtonText="Close"
       >
         <ModalBody>
