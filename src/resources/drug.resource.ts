@@ -14,3 +14,9 @@ export async function fetchDrugCatalogueSearch(){
     const data = (await response.json()) as HieProductCatalogueDrugsResponse;
     return data.setMembers ?? [];
 }
+export async function fetchAmpathOrderableDrugs(searchTerm: string){
+    const url = `${restBaseUrl}/drug?s=ampathOrderableDrugs&q=${searchTerm}&v=full`;
+    const response = await openmrsFetch(url);
+    const data = (await response.json()) as DrugReponse;
+    return data.results ?? [];
+}
